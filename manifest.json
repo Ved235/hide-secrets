@@ -1,0 +1,30 @@
+{
+    "manifest_version": 3,
+    "name": "hide secrets",
+    "version": "1.0",
+    "description": "Automatically hides secrets in the browser",
+    "permissions": [
+        "activeTab",
+        "scripting",
+        "storage"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "background": {
+        "service_worker": "background.js",
+        "run_at": "document_idle"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": ["content.js"]
+        }
+    ],
+    "action": {
+        "default_title": "Hide Secrets",
+        "default_popup": "popup.html"
+    }
+}
