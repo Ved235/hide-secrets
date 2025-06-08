@@ -17,6 +17,8 @@ _While using this on sites where you are typing data do not select masking style
 
 * **No Data Collection**
   All processing is client-side; no content is sent to any server.
+  ![image](https://github.com/user-attachments/assets/19551d93-c711-4f53-9827-b1decf0aea43)
+
   
 ## Usage
 
