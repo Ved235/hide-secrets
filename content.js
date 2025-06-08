@@ -220,7 +220,9 @@
   }
 
   async function walkAndProcess(node) {
-    if (!settings.extensionEnabled) return;
+    if (!settings.extensionEnabled){
+      console.log("Extension is disabled, skipping processing."+ node.value);
+      return;}
 
     if (node.nodeType === Node.ELEMENT_NODE) {
       if (node.hasAttribute(MARK_ATTR)) return;
@@ -230,6 +232,8 @@
         try {
           const val = node.value || "";
           if (quickTest(val) && settings.blurEnabled) {
+            console.log(
+              `Redacting input value: ${val} in element: <${tag}>` );
             node.style.filter = "blur(5px)";
           }
           node.setAttribute(MARK_ATTR, "true");
@@ -257,23 +261,7 @@
     await walkAndProcess(root);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener(
-      "DOMContentLoaded",
-      () => {
-        if (settings.extensionEnabled) {
-          runInitialScan().catch((err) =>
-            console.error("Error during initial scan:", err)
-          );
-        }
-      },
-      { once: true }
-    );
-  } else if (settings.extensionEnabled) {
-    runInitialScan().catch((err) =>
-      console.error("Error during initial scan:", err)
-    );
-  }
+ 
 
   const observer = new MutationObserver((mutations) => {
     if (!settings.extensionEnabled) return;
