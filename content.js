@@ -1,15 +1,33 @@
-// content.js
 (() => {
   "use strict";
 
   const MARK_ATTR = "data-secret-processed";
+  
+// Default settings
+let settings = {
+  extensionEnabled: true,
+  emailsEnabled: true,
+  phonesEnabled: true,
+  creditcardsEnabled: true,
+  apiKeysEnabled: true,
+  entropyEnabled: true,
+  blurEnabled: true,
+  textRedactionStyle: 'redacted' // 'redacted' or 'blur'
+};
+
+// Load saved settings
+chrome.storage.sync.get(settings, (savedSettings) => {
+  settings = savedSettings;
+  if (settings.extensionEnabled && document.readyState !== "loading") {
+    runInitialScan().catch(err => console.error("Error during initial scan:", err));
+  }
+});
 
   const emailPatterns = [/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/];
 
   const phonePatterns = [
-    /\b\+?\d{1,3}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9}\b/,
     /\b\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/,
-
+    /\b\+?(?:\d[-.\s]?){6,14}\d\b/,
   ];
 
   const creditCardPatterns = [
@@ -41,41 +59,47 @@
   }
 
   function quickTest(text) {
-    if (!text || !text.trim()) return false;
+    if (!settings.extensionEnabled || !text || !text.trim()) return false;
 
-    for (let re of emailPatterns) {
-      if (re.test(text)) {
-        console.log("Email regex passed:", re, "for text:", text);
-        return true;
+    if (settings.emailsEnabled) {
+      for (let re of emailPatterns) {
+        if (re.test(text)) {
+          return true;
+        }
       }
     }
 
-    for (let re of phonePatterns) {
-      if (re.test(text)) {
-        console.log("Phone regex passed:", re, "for text:", text);
-        return true;
+    if (settings.phonesEnabled) {
+      for (let re of phonePatterns) {
+        if (re.test(text)) {
+          return true;
+        }
       }
     }
 
-    for (let re of creditCardPatterns) {
-      if (re.test(text)) {
-        console.log("Credit card regex passed:", re, "for text:", text);
-        return true;
+    if (settings.creditcardsEnabled) {
+      for (let re of creditCardPatterns) {
+        if (re.test(text)) {
+          return true;
+        }
       }
     }
 
-    for (let re of tokenPatterns) {
-      if (re.test(text)) {
-        console.log("Token regex passed:", re, "for text:", text);
-        return true;
+    if (settings.apiKeysEnabled) {
+      for (let re of tokenPatterns) {
+        if (re.test(text)) {
+          return true;
+        }
       }
     }
 
-    const parts = text.split(/[\s\.\:\'\"!\?\(\)\[\]\{\}]/);
-    for (let fragment of parts) {
-      if (genericHighEntropy.test(fragment) && fragment.length >= 32) {
-        const ent = computeShannonEntropy(fragment);
-        if (ent > 4) return true;
+    if (settings.entropyEnabled) {
+      const parts = text.split(/[\s\.\:\'\"!\?\(\)\[\]\{\}]/);
+      for (let fragment of parts) {
+        if (genericHighEntropy.test(fragment) && fragment.length >= 32) {
+          const ent = computeShannonEntropy(fragment);
+          if (ent > 4) return true;
+        }
       }
     }
 
@@ -83,6 +107,8 @@
   }
 
   function detectAndReplaceTextNode(textNode) {
+    if (!settings.extensionEnabled) return;
+    
     const parentElem = textNode.parentElement;
     if (!parentElem) return;
     if (textNode.nodeType !== Node.TEXT_NODE) return;
@@ -94,16 +120,18 @@
     let matchedPattern = null;
     let match = null;
 
-    for (let re of emailPatterns) {
-      re.lastIndex = 0;
-      if ((match = re.exec(txt))) {
-        matchInfo = { value: match[0] };
-        matchedPattern = re;
-        break;
+    if (settings.emailsEnabled) {
+      for (let re of emailPatterns) {
+        re.lastIndex = 0;
+        if ((match = re.exec(txt))) {
+          matchInfo = { value: match[0] };
+          matchedPattern = re;
+          break;
+        }
       }
     }
 
-    if (!matchInfo) {
+    if (!matchInfo && settings.phonesEnabled) {
       for (let re of phonePatterns) {
         re.lastIndex = 0;
         if ((match = re.exec(txt))) {
@@ -114,7 +142,7 @@
       }
     }
 
-    if (!matchInfo) {
+    if (!matchInfo && settings.creditcardsEnabled) {
       for (let re of creditCardPatterns) {
         re.lastIndex = 0;
         if ((match = re.exec(txt))) {
@@ -125,7 +153,7 @@
       }
     }
 
-    if (!matchInfo) {
+    if (!matchInfo && settings.apiKeysEnabled) {
       for (let re of tokenPatterns) {
         re.lastIndex = 0;
         if ((match = re.exec(txt))) {
@@ -136,7 +164,7 @@
       }
     }
 
-    if (!matchInfo) {
+    if (!matchInfo && settings.entropyEnabled) {
       const parts = txt.split(/[\s\.\:\'\"!\?\(\)\[\]\{\}]/);
       for (let fragment of parts) {
         if (
@@ -183,6 +211,8 @@
   }
 
   async function walkAndProcess(node) {
+    if (!settings.extensionEnabled) return;
+    
     if (node.nodeType === Node.ELEMENT_NODE) {
       if (node.hasAttribute(MARK_ATTR)) return;
 
@@ -190,11 +220,12 @@
       if (tag === "input" || tag === "textarea") {
         try {
           const val = node.value || "";
-          if (quickTest(val)) {
+          if (quickTest(val) && settings.blurEnabled) {
             node.style.filter = "blur(5px)";
           }
           node.setAttribute(MARK_ATTR, "true");
         } catch (e) {
+          // Ignore errors
         }
         return;
       }
@@ -212,27 +243,97 @@
   }
 
   async function runInitialScan() {
+    if (!settings.extensionEnabled) return;
     const root = document.body || document.documentElement;
     await walkAndProcess(root);
   }
+
+  // Listen for messages from popup
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "updateSettings") {
+    settings = message.settings;
+
+    // 1) Remove all processed marks & undo any blur/redacted spans
+    document.querySelectorAll(`[${MARK_ATTR}]`).forEach(el => {
+      // remove the marker
+      el.removeAttribute(MARK_ATTR);
+
+      // clear any blur filter
+      if (el.style && el.style.filter) {
+        el.style.filter = "";
+      }
+
+      // unwrap any “[REDACTED]” spans back to empty text nodes
+      if (
+        el.nodeName.toLowerCase() === "span" &&
+        el.textContent === "[REDACTED]" &&
+        el.parentNode
+      ) {
+        el.parentNode.replaceChild(
+          document.createTextNode(""),
+          el
+        );
+      }
+    });
+
+    // 2) Run a fresh scan with the new settings
+    runInitialScan().catch(err =>
+      console.error("Error during settings-scan:", err)
+    );
+  }
+  else if (message.action === "rescan" && settings.extensionEnabled) {
+    // Clear processed marks & undo any blur/redacted spans
+    document.querySelectorAll(`[${MARK_ATTR}]`).forEach(el => {
+      if (
+        el.nodeName.toLowerCase() === "span" &&
+        el.textContent === "[REDACTED]" &&
+        el.parentNode
+      ) {
+        el.parentNode.replaceChild(
+          document.createTextNode(""),
+          el
+        );
+      } else {
+        el.removeAttribute(MARK_ATTR);
+        if (
+          (el.tagName.toLowerCase() === "input" ||
+            el.tagName.toLowerCase() === "textarea") &&
+          el.style.filter === "blur(5px)"
+        ) {
+          el.style.filter = "";
+        }
+      }
+    });
+
+    // Run a fresh scan
+    runInitialScan().catch(err =>
+      console.error("Error during rescan:", err)
+    );
+  }
+});
+
 
   if (document.readyState === "loading") {
     document.addEventListener(
       "DOMContentLoaded",
       () => {
-        runInitialScan().catch((err) =>
-          console.error("Error during initial scan:", err)
-        );
+        if (settings.extensionEnabled) {
+          runInitialScan().catch((err) =>
+            console.error("Error during initial scan:", err)
+          );
+        }
       },
       { once: true }
     );
-  } else {
+  } else if (settings.extensionEnabled) {
     runInitialScan().catch((err) =>
       console.error("Error during initial scan:", err)
     );
   }
 
   const observer = new MutationObserver((mutations) => {
+    if (!settings.extensionEnabled) return;
+    
     for (const mutation of mutations) {
       (async () => {
         if (mutation.type === "childList") {

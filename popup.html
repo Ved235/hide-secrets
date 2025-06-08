@@ -1,0 +1,192 @@
+<!-- filepath: c:\Users\vedan\OneDrive\Documents\GitHub\hide-secrets\popup.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hide Secrets Settings</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0;
+    }
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .toggle-container label {
+      flex-grow: 1;
+      padding-left: 10px;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #2196F3;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    .section {
+      margin-top: 15px;
+      border-top: 1px solid #eee;
+      padding-top: 10px;
+    }
+    .footer {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+    }
+    button {
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #0b7dda;
+    }
+    #status-message {
+      margin-top: 10px;
+      padding: 5px;
+      border-radius: 4px;
+      font-size: 12px;
+      text-align: center;
+      display: none;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .info {
+      background-color: #cce5ff;
+      color: #004085;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="title">Hide Secrets</h1>
+    <div class="toggle-container">
+      <label class="switch">
+        <input type="checkbox" id="extension-enabled" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div>
+    <div class="toggle-container">
+      <label class="switch">
+        <input type="checkbox" id="emails-enabled" checked>
+        <span class="slider"></span>
+      </label>
+      <label for="emails-enabled">Hide Email Addresses</label>
+    </div>
+
+    <div class="toggle-container">
+      <label class="switch">
+        <input type="checkbox" id="phones-enabled" checked>
+        <span class="slider"></span>
+      </label>
+      <label for="phones-enabled">Hide Phone Numbers</label>
+    </div>
+
+    <div class="toggle-container">
+      <label class="switch">
+        <input type="checkbox" id="creditcards-enabled" checked>
+        <span class="slider"></span>
+      </label>
+      <label for="creditcards-enabled">Hide Credit Card Numbers</label>
+    </div>
+
+    <div class="toggle-container">
+      <label class="switch">
+        <input type="checkbox" id="api-keys-enabled" checked>
+        <span class="slider"></span>
+      </label>
+      <label for="api-keys-enabled">Hide API Keys & Tokens</label>
+    </div>
+
+    <div class="toggle-container">
+      <label class="switch">
+        <input type="checkbox" id="entropy-enabled" checked>
+        <span class="slider"></span>
+      </label>
+      <label for="entropy-enabled">Hide High-Entropy Strings</label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="toggle-container">
+      <label class="switch">
+        <input type="checkbox" id="blur-enabled" checked>
+        <span class="slider"></span>
+      </label>
+      <label for="blur-enabled">Blur sensitive input fields</label>
+    </div>
+    
+    <button id="scan-page">Scan Page Now</button>
+    <div id="status-message"></div>
+  </div>
+
+  <div class="footer">
+    Hide Secrets v1.0 - Automatically redacts sensitive information
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
