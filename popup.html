@@ -1,209 +1,488 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <title>Hide Secrets Settings</title>
-  <style>
-    body {
-      width: 300px;
-      padding: 15px;
-      font-family: Arial, sans-serif;
-    }
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 15px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 10px;
-    }
-    .radio-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.radio-container label {
-  margin-left: 8px;
-}
-    .title {
-      font-size: 18px;
-      font-weight: bold;
-      margin: 0;
-    }
-    .toggle-container {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .toggle-container label {
-      flex-grow: 1;
-      padding-left: 10px;
-    }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 24px;
-    }
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: .4s;
-      border-radius: 34px;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 16px;
-      width: 16px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-    }
-    input:checked + .slider {
-      background-color: #2196F3;
-    }
-    input:checked + .slider:before {
-      transform: translateX(26px);
-    }
-    .section {
-      margin-top: 15px;
-      border-top: 1px solid #eee;
-      padding-top: 10px;
-    }
-    .footer {
-      margin-top: 15px;
-      font-size: 12px;
-      color: #666;
-      text-align: center;
-    }
-    button {
-      background-color: #2196F3;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      margin-top: 10px;
-      width: 100%;
-    }
-    button:hover {
-      background-color: #0b7dda;
-    }
-    #status-message {
-      margin-top: 10px;
-      padding: 5px;
-      border-radius: 4px;
-      font-size: 12px;
-      text-align: center;
-      display: none;
-    }
-    .success {
-      background-color: #d4edda;
-      color: #155724;
-    }
-    .error {
-      background-color: #f8d7da;
-      color: #721c24;
-    }
-    .info {
-      background-color: #cce5ff;
-      color: #004085;
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1 class="title">Hide Secrets</h1>
-    <div class="toggle-container">
-      <label class="switch">
-        <input type="checkbox" id="extension-enabled" checked>
-        <span class="slider"></span>
-      </label>
-    </div>
-  </div>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hide Secrets Settings</title>
+    <style>
+      body {
+        width: 350px;
+        background-color: #111827; /* bg-gray-900 */
+        color: #e5e7eb; /* text-gray-200 */
+        padding: 1rem; /* p-4 */
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+          "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+          "Noto Color Emoji"; /* font-sans */
+        margin: 0;
+      }
 
-  <div>
-    <div class="toggle-container">
-      <label class="switch">
-        <input type="checkbox" id="emails-enabled" checked>
-        <span class="slider"></span>
-      </label>
-      <label for="emails-enabled">Hide Email Addresses</label>
-    </div>
+      main {
+        display: flex;
+        flex-direction: column;
+      }
 
-    <div class="toggle-container">
-      <label class="switch">
-        <input type="checkbox" id="phones-enabled" checked>
-        <span class="slider"></span>
-      </label>
-      <label for="phones-enabled">Hide Phone Numbers</label>
-    </div>
+      /* Header */
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 1rem; /* pb-4 */
+        border-bottom: 1px solid #374151; /* border-b border-gray-700 */
+      }
 
-    <div class="toggle-container">
-      <label class="switch">
-        <input type="checkbox" id="creditcards-enabled" checked>
-        <span class="slider"></span>
-      </label>
-      <label for="creditcards-enabled">Hide Credit Card Numbers</label>
-    </div>
+      .header-title-container {
+        display: flex;
+        align-items: center;
+      }
 
-    <div class="toggle-container">
-      <label class="switch">
-        <input type="checkbox" id="api-keys-enabled" checked>
-        <span class="slider"></span>
-      </label>
-      <label for="api-keys-enabled">Hide API Keys & Tokens</label>
-    </div>
+      .header-title-container svg {
+        height: 1.75rem; /* h-7 */
+        width: 1.75rem; /* w-7 */
+        color: #22c55e; /* text-green-500 */
+      }
 
-    <div class="toggle-container">
-      <label class="switch">
-        <input type="checkbox" id="entropy-enabled" checked>
-        <span class="slider"></span>
-      </label>
-      <label for="entropy-enabled">Hide High-Entropy Strings</label>
-    </div>
-  </div>
+      .header h1 {
+        font-size: 1.25rem; /* text-xl */
+        font-weight: 700; /* font-bold */
+        margin-left: 0.5rem; /* ml-2 */
+        margin-top: 0;
+        margin-bottom: 0;
+      }
 
-<div class="section">
-  <p>Text redaction style:</p>
-  <div class="radio-container">
-    <input type="radio" id="redacted-style" name="text-style" value="redacted">
-    <label for="redacted-style">Replace with [REDACTED]</label>
-  </div>
-  <div class="radio-container">
-    <input type="radio" id="blur-style" name="text-style" value="blur" checked>
-    <label for="blur-style">Blur text</label>
-  </div>
-</div>
+      /* Generic Toggle Switch Styles */
+      .toggle-switch-container {
+        position: relative;
+        display: inline-flex;
+        cursor: pointer;
+        align-items: center;
+      }
 
-<div class="section">
-  <div class="toggle-container">
-    <label class="switch">
-      <input type="checkbox" id="blur-enabled" checked>
-      <span class="slider"></span>
-    </label>
-    <label for="blur-enabled">Blur sensitive input fields</label>
-  </div>
-  <div id="status-message"></div>
-</div>
+      .toggle-switch-container input[type="checkbox"] {
+        /* sr-only */
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
 
-  <div class="footer">
-    Hide Secrets v1.0 - Automatically redacts sensitive information
-  </div>
+      .toggle-slider {
+        height: 1.5rem; /* h-6 */
+        width: 2.75rem; /* w-11 */
+        border-radius: 9999px; /* rounded-full */
+        background-color: #374151; /* bg-gray-700 */
+        position: relative;
+        transition: background-color 0.2s ease-in-out;
+      }
 
-  <script src="popup.js"></script>
-</body>
+      .toggle-slider::after {
+        content: "";
+        position: absolute;
+        left: 2px;
+        top: 2px;
+        height: 1.25rem; /* h-5 */
+        width: 1.25rem; /* w-5 */
+        border-radius: 9999px; /* rounded-full */
+        border: 1px solid #d1d5db; /* border border-gray-300 */
+        background-color: white; /* bg-white */
+        transition: transform 0.2s ease-in-out;
+      }
+
+      .toggle-switch-container input[type="checkbox"]:checked + .toggle-slider {
+        background-color: #16a34a; /* peer-checked:bg-green-600 */
+      }
+
+      .toggle-switch-container
+        input[type="checkbox"]:checked
+        + .toggle-slider::after {
+        transform: translateX(
+          100%
+        ); /* peer-checked:after:translate-x-full (approx) */
+        border-color: white; /* peer-checked:after:border-white */
+      }
+
+      .toggle-switch-container input[type="checkbox"]:focus + .toggle-slider {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(22, 107, 56, 0.5); /* peer-focus:ring-4 peer-focus:ring-green-800 */
+      }
+
+      .toggle-switch-container
+        input[type="checkbox"]:disabled
+        + .toggle-slider {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+      .toggle-switch-container
+        input[type="checkbox"]:disabled:checked
+        + .toggle-slider {
+        background-color: #16a34a; /* Ensure disabled checked color remains */
+      }
+
+      /* Settings Item (Toggle Row) */
+      .settings-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 0.75rem; /* py-3 */
+        padding-bottom: 0.75rem; /* py-3 */
+      }
+
+      .settings-item-label-group {
+        display: flex;
+        align-items: center;
+      }
+
+      .settings-item-label-group svg {
+        margin-right: 0.75rem; /* mr-3 */
+        height: 1.25rem; /* h-5 */
+        width: 1.25rem; /* w-5 */
+        color: #9ca3af; /* text-gray-400 */
+      }
+
+      .settings-item-label-group svg.disabled-icon {
+        color: #4b5563; /* text-gray-600 */
+      }
+
+      .settings-item label.item-label {
+        font-weight: 500; /* font-medium */
+        color: #d1d5db; /* text-gray-300 */
+      }
+
+      .settings-item label.item-label.disabled-label {
+        color: #4b5563; /* text-gray-600 */
+        cursor: not-allowed;
+      }
+
+      /* Divide sections */
+      .divide-y > *:not(:first-child) {
+        border-top: 1px solid #1f2937; /* divide-gray-800 */
+      }
+
+      .section-border-t {
+        margin-top: 1rem; /* mt-4 */
+        padding-top: 1rem; /* pt-4 */
+        border-top: 1px solid #374151; /* border-t border-gray-700 */
+      }
+
+      /* Redaction Style Section */
+      .section-title {
+        font-size: 0.875rem; /* text-sm */
+        font-weight: 600; /* font-semibold */
+        color: #9ca3af; /* text-gray-400 */
+        margin-bottom: 0.75rem; /* mb-3 */
+        margin-top: 0;
+      }
+
+      .radio-options-group {
+        display: flex;
+        flex-direction: column;
+      }
+      .radio-options-group > *:not(:first-child) {
+        margin-top: 0.5rem; /* space-y-2 */
+      }
+
+      .radio-option {
+        display: flex;
+        align-items: center;
+      }
+
+      .radio-option input[type="radio"] {
+        height: 1rem; /* h-4 */
+        width: 1rem; /* w-4 */
+        border-color: #4b5563; /* border-gray-600 */
+        background-color: #374151; /* bg-gray-700 */
+        accent-color: #16a34a; /* text-green-600 */ /* Modern browsers */
+        /* For older browsers, more complex styling would be needed */
+      }
+      .radio-option input[type="radio"]:focus {
+        box-shadow: 0 0 0 2px #16a34a; /* focus:ring-2 focus:ring-green-600 */
+        outline: none;
+      }
+
+      .radio-option label {
+        margin-left: 0.5rem; /* ml-2 */
+        font-size: 0.875rem; /* text-sm */
+        font-weight: 500; /* font-medium */
+        color: #d1d5db; /* text-gray-300 */
+      }
+
+      /* Footer */
+      .footer {
+        margin-top: 1.5rem; /* mt-6 */
+        text-align: center; /* text-center */
+        font-size: 0.75rem; /* text-xs */
+        color: #6b7280; /* text-gray-500 */
+      }
+      .footer p {
+        margin: 0;
+      }
+
+      #status-message {
+        margin-top: 1rem;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        text-align: center;
+        display: none;
+      }
+
+      #status-message.info {
+        background-color: #1e3a8a;
+        color: #dbeafe;
+      }
+
+      #status-message.success {
+        background-color: #064e3b;
+        color: #d1fae5;
+      }
+
+      #status-message.error {
+        background-color: #7f1d1d;
+        color: #fee2e2;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="header">
+        <div class="header-title-container">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
+          <h1>Hide Secrets</h1>
+        </div>
+        <label class="toggle-switch-container">
+          <input type="checkbox" id="extension-enabled" checked />
+          <div class="toggle-slider"></div>
+        </label>
+      </div>
+
+      <div class="divide-y">
+        <div class="settings-item">
+          <div class="settings-item-label-group">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect width="20" height="16" x="2" y="4" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+            <label for="emails-enabled" class="item-label"
+              >Hide Email Addresses</label
+            >
+          </div>
+          <label class="toggle-switch-container">
+            <input type="checkbox" id="emails-enabled" checked />
+            <div class="toggle-slider"></div>
+          </label>
+        </div>
+
+        <div class="settings-item">
+          <div class="settings-item-label-group">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="disabled-icon"
+            >
+              <path
+                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+              />
+            </svg>
+            <label for="phones-enabled" class="item-label disabled-label"
+              >Hide Phone Numbers</label
+            >
+          </div>
+          <label class="toggle-switch-container">
+            <input type="checkbox" id="phones-enabled" disabled />
+            <div class="toggle-slider"></div>
+          </label>
+        </div>
+
+        <div class="settings-item">
+          <div class="settings-item-label-group">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect width="20" height="14" x="2" y="5" rx="2" />
+              <line x1="2" x2="22" y1="10" y2="10" />
+            </svg>
+            <label for="creditcards-enabled" class="item-label"
+              >Hide Credit Card Numbers</label
+            >
+          </div>
+          <label class="toggle-switch-container">
+            <input type="checkbox" id="creditcards-enabled" checked />
+            <div class="toggle-slider"></div>
+          </label>
+        </div>
+
+        <div class="settings-item">
+          <div class="settings-item-label-group">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"
+              />
+              <circle cx="16.5" cy="7.5" r=".5" />
+            </svg>
+            <label for="api-keys-enabled" class="item-label"
+              >Hide API Keys & Tokens</label
+            >
+          </div>
+          <label class="toggle-switch-container">
+            <input type="checkbox" id="api-keys-enabled" checked />
+            <div class="toggle-slider"></div>
+          </label>
+        </div>
+
+        <div class="settings-item">
+          <div class="settings-item-label-group">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M19.439 7.852c-2.94 1.542-7.243 4.264-7.243 4.264l-5.145-2.656s1.305-6.43 8.354-5.335c.37.056.73.122 1.082.198l.786 5.529Z"
+              />
+              <path
+                d="m11.019 11.967-5.488 2.722s.628 5.935 6.803 5.325c3.43-.335 5.427-3.122 5.427-3.122l-1.14-4.97-.002-.001Z"
+              />
+              <path
+                d="M10.352 7.852c-2.144-1.072-3.208-2.988-3.208-2.988S2.988 6.43 2.148 9.372c-.56 1.958.096 4.098 1.28 5.308L7.852 12l2.5-1.25Z"
+              />
+              <path
+                d="M19.439 12.648c1.958.56 4.098-.096 5.308-1.28l-2.988-4.156s-1.565 2.632-4.156 3.208c-.98.212-2.034.243-3.03.108l4.866 2.11Z"
+              />
+            </svg>
+            <label for="entropy-enabled" class="item-label"
+              >Hide High-Entropy Strings</label
+            >
+          </div>
+          <label class="toggle-switch-container">
+            <input type="checkbox" id="entropy-enabled" checked />
+            <div class="toggle-slider"></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="section-border-t">
+        <h2 class="section-title">Text redaction style</h2>
+        <div class="radio-options-group">
+          <div class="radio-option">
+            <input
+              id="redacted-style"
+              type="radio"
+              value="redacted"
+              name="text-style"
+            />
+            <label for="redacted-style">Replace with [REDACTED]</label>
+          </div>
+          <div class="radio-option">
+            <input
+              id="blur-style"
+              type="radio"
+              value="blur"
+              name="text-style"
+              checked
+            />
+            <label for="blur-style">Blur text</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-border-t divide-y">
+        <div class="settings-item">
+          <div class="settings-item-label-group">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+              <path
+                d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"
+              />
+              <path
+                d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"
+              />
+              <line x1="2" x2="22" y1="2" y2="22" />
+            </svg>
+            <label for="blur-enabled" class="item-label"
+              >Blur sensitive input fields</label
+            >
+          </div>
+          <label class="toggle-switch-container">
+            <input type="checkbox" id="blur-enabled" checked />
+            <div class="toggle-slider"></div>
+          </label>
+        </div>
+      </div>
+      <div id="status-message" class="info"></div>
+      <!-- Footer -->
+      <div class="footer">
+        <p>Hide Secrets v1.0</p>
+      </div>
+    </main>
+    <script src="popup.js"></script>
+  </body>
 </html>

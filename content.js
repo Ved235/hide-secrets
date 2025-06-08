@@ -7,7 +7,7 @@
   let settings = {
     extensionEnabled: true,
     emailsEnabled: true,
-    phonesEnabled: true,
+    phonesEnabled: false,
     creditcardsEnabled: true,
     apiKeysEnabled: true,
     entropyEnabled: true,
@@ -29,7 +29,7 @@
 
   const phonePatterns = [
     /\b\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/,
-    /\b\+?\d{1,4}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{1,9}[-.\s]?\d{1,9}\b/,
+ /\b(?!\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4})\+?(?:\d[-.\s]?){6,14}\d\b/,
   ];
 
   const creditCardPatterns = [
@@ -63,6 +63,14 @@
   function quickTest(text) {
     if (!settings.extensionEnabled || !text || !text.trim()) return false;
 
+    if (settings.apiKeysEnabled) {
+      for (let re of tokenPatterns) {
+        if (re.test(text)) {
+          return true;
+        }
+      }
+    }
+
     if (settings.emailsEnabled) {
       for (let re of emailPatterns) {
         if (re.test(text)) {
@@ -87,13 +95,7 @@
       }
     }
 
-    if (settings.apiKeysEnabled) {
-      for (let re of tokenPatterns) {
-        if (re.test(text)) {
-          return true;
-        }
-      }
-    }
+
 
     if (settings.entropyEnabled) {
       const parts = text.split(/[\s\.\:\'\"!\?\(\)\[\]\{\}]/);
@@ -121,8 +123,18 @@
     let matchInfo = null;
     let matchedPattern = null;
     let match = null;
+    if (settings.apiKeysEnabled) {
+      for (let re of tokenPatterns) {
+        re.lastIndex = 0;
+        if ((match = re.exec(txt))) {
+          matchInfo = { value: match[0] };
+          matchedPattern = re;
+          break;
+        }
+      }
+    }
 
-    if (settings.emailsEnabled) {
+    if (!matchInfo && settings.emailsEnabled) {
       for (let re of emailPatterns) {
         re.lastIndex = 0;
         if ((match = re.exec(txt))) {
@@ -155,16 +167,7 @@
       }
     }
 
-    if (!matchInfo && settings.apiKeysEnabled) {
-      for (let re of tokenPatterns) {
-        re.lastIndex = 0;
-        if ((match = re.exec(txt))) {
-          matchInfo = { value: match[0] };
-          matchedPattern = re;
-          break;
-        }
-      }
-    }
+
 
     if (!matchInfo && settings.entropyEnabled) {
       const parts = txt.split(/[\s\.\:\'\"!\?\(\)\[\]\{\}]/);

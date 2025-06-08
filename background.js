@@ -2,7 +2,7 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.set({
     extensionEnabled: true,
     emailsEnabled: true,
-    phonesEnabled: true,
+    phonesEnabled: false,
     creditcardsEnabled: true,
     apiKeysEnabled: true,
     entropyEnabled: true,

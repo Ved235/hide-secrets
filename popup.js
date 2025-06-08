@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   chrome.storage.sync.get({
     extensionEnabled: true,
     emailsEnabled: true,
-    phonesEnabled: true,
+    phonesEnabled: false,
     creditcardsEnabled: true,
     apiKeysEnabled: true,
     entropyEnabled: true,
