@@ -1,4 +1,3 @@
-// Initialize default settings on installation
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.set({
     extensionEnabled: true,
@@ -7,11 +6,11 @@ chrome.runtime.onInstalled.addListener(() => {
     creditcardsEnabled: true,
     apiKeysEnabled: true,
     entropyEnabled: true,
-    blurEnabled: true
+    blurEnabled: true,
+    textRedactionStyle: "blur"
   });
 });
 
-// Listen for messages from content script or popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  return true; // Required for async response
+  return true; 
 });

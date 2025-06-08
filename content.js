@@ -2,32 +2,34 @@
   "use strict";
 
   const MARK_ATTR = "data-secret-processed";
-  
-// Default settings
-let settings = {
-  extensionEnabled: true,
-  emailsEnabled: true,
-  phonesEnabled: true,
-  creditcardsEnabled: true,
-  apiKeysEnabled: true,
-  entropyEnabled: true,
-  blurEnabled: true,
-  textRedactionStyle: 'redacted' // 'redacted' or 'blur'
-};
 
-// Load saved settings
-chrome.storage.sync.get(settings, (savedSettings) => {
-  settings = savedSettings;
-  if (settings.extensionEnabled && document.readyState !== "loading") {
-    runInitialScan().catch(err => console.error("Error during initial scan:", err));
-  }
-});
+  // Default settings
+  let settings = {
+    extensionEnabled: true,
+    emailsEnabled: true,
+    phonesEnabled: true,
+    creditcardsEnabled: true,
+    apiKeysEnabled: true,
+    entropyEnabled: true,
+    blurEnabled: true,
+    textRedactionStyle: "blur", 
+  };
+
+  // Load saved settings
+  chrome.storage.sync.get(settings, (savedSettings) => {
+    settings = savedSettings;
+    if (settings.extensionEnabled && document.readyState !== "loading") {
+      runInitialScan().catch((err) =>
+        console.error("Error during initial scan:", err)
+      );
+    }
+  });
 
   const emailPatterns = [/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/];
 
   const phonePatterns = [
     /\b\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/,
-    /\b\+?(?:\d[-.\s]?){6,14}\d\b/,
+    /\b\+?\d{1,4}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{1,9}[-.\s]?\d{1,9}\b/,
   ];
 
   const creditCardPatterns = [
@@ -108,7 +110,7 @@ chrome.storage.sync.get(settings, (savedSettings) => {
 
   function detectAndReplaceTextNode(textNode) {
     if (!settings.extensionEnabled) return;
-    
+
     const parentElem = textNode.parentElement;
     if (!parentElem) return;
     if (textNode.nodeType !== Node.TEXT_NODE) return;
@@ -197,10 +199,17 @@ chrome.storage.sync.get(settings, (savedSettings) => {
       if (idx > lastIndex) {
         frag.appendChild(document.createTextNode(txt.slice(lastIndex, idx)));
       }
-      const redactedSpan = document.createElement("span");
-      redactedSpan.textContent = "[REDACTED]";
-      redactedSpan.setAttribute(MARK_ATTR, "true");
-      frag.appendChild(redactedSpan);
+      const span = document.createElement("span");
+      span.setAttribute(MARK_ATTR, "true");
+      if (settings.textRedactionStyle === "blur") {
+        span.textContent = m[0];
+        span.style.filter = "blur(5px)";
+        span.className = "hide-secrets-blurred";
+      } else {
+        span.textContent = "[REDACTED]";
+        span.className = "hide-secrets-redacted";
+      }
+      frag.appendChild(span);
       lastIndex = idx + m[0].length;
     }
     if (lastIndex < txt.length) {
@@ -212,7 +221,7 @@ chrome.storage.sync.get(settings, (savedSettings) => {
 
   async function walkAndProcess(node) {
     if (!settings.extensionEnabled) return;
-    
+
     if (node.nodeType === Node.ELEMENT_NODE) {
       if (node.hasAttribute(MARK_ATTR)) return;
 
@@ -248,71 +257,6 @@ chrome.storage.sync.get(settings, (savedSettings) => {
     await walkAndProcess(root);
   }
 
-  // Listen for messages from popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "updateSettings") {
-    settings = message.settings;
-
-    // 1) Remove all processed marks & undo any blur/redacted spans
-    document.querySelectorAll(`[${MARK_ATTR}]`).forEach(el => {
-      // remove the marker
-      el.removeAttribute(MARK_ATTR);
-
-      // clear any blur filter
-      if (el.style && el.style.filter) {
-        el.style.filter = "";
-      }
-
-      // unwrap any “[REDACTED]” spans back to empty text nodes
-      if (
-        el.nodeName.toLowerCase() === "span" &&
-        el.textContent === "[REDACTED]" &&
-        el.parentNode
-      ) {
-        el.parentNode.replaceChild(
-          document.createTextNode(""),
-          el
-        );
-      }
-    });
-
-    // 2) Run a fresh scan with the new settings
-    runInitialScan().catch(err =>
-      console.error("Error during settings-scan:", err)
-    );
-  }
-  else if (message.action === "rescan" && settings.extensionEnabled) {
-    // Clear processed marks & undo any blur/redacted spans
-    document.querySelectorAll(`[${MARK_ATTR}]`).forEach(el => {
-      if (
-        el.nodeName.toLowerCase() === "span" &&
-        el.textContent === "[REDACTED]" &&
-        el.parentNode
-      ) {
-        el.parentNode.replaceChild(
-          document.createTextNode(""),
-          el
-        );
-      } else {
-        el.removeAttribute(MARK_ATTR);
-        if (
-          (el.tagName.toLowerCase() === "input" ||
-            el.tagName.toLowerCase() === "textarea") &&
-          el.style.filter === "blur(5px)"
-        ) {
-          el.style.filter = "";
-        }
-      }
-    });
-
-    // Run a fresh scan
-    runInitialScan().catch(err =>
-      console.error("Error during rescan:", err)
-    );
-  }
-});
-
-
   if (document.readyState === "loading") {
     document.addEventListener(
       "DOMContentLoaded",
@@ -333,7 +277,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   const observer = new MutationObserver((mutations) => {
     if (!settings.extensionEnabled) return;
-    
+
     for (const mutation of mutations) {
       (async () => {
         if (mutation.type === "childList") {

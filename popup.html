@@ -1,4 +1,3 @@
-<!-- filepath: c:\Users\vedan\OneDrive\Documents\GitHub\hide-secrets\popup.html -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,6 +16,14 @@
       border-bottom: 1px solid #eee;
       padding-bottom: 10px;
     }
+    .radio-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.radio-container label {
+  margin-left: 8px;
+}
     .title {
       font-size: 18px;
       font-weight: bold;
@@ -170,18 +177,28 @@
     </div>
   </div>
 
-  <div class="section">
-    <div class="toggle-container">
-      <label class="switch">
-        <input type="checkbox" id="blur-enabled" checked>
-        <span class="slider"></span>
-      </label>
-      <label for="blur-enabled">Blur sensitive input fields</label>
-    </div>
-    
-    <button id="scan-page">Scan Page Now</button>
-    <div id="status-message"></div>
+<div class="section">
+  <p>Text redaction style:</p>
+  <div class="radio-container">
+    <input type="radio" id="redacted-style" name="text-style" value="redacted">
+    <label for="redacted-style">Replace with [REDACTED]</label>
   </div>
+  <div class="radio-container">
+    <input type="radio" id="blur-style" name="text-style" value="blur" checked>
+    <label for="blur-style">Blur text</label>
+  </div>
+</div>
+
+<div class="section">
+  <div class="toggle-container">
+    <label class="switch">
+      <input type="checkbox" id="blur-enabled" checked>
+      <span class="slider"></span>
+    </label>
+    <label for="blur-enabled">Blur sensitive input fields</label>
+  </div>
+  <div id="status-message"></div>
+</div>
 
   <div class="footer">
     Hide Secrets v1.0 - Automatically redacts sensitive information
