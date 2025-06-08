@@ -38,8 +38,10 @@
   ];
 
   const tokenPatterns = [
-    /xox[baprs]-[0-9A-Za-z-]{10,72}/i,
-    /eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+/,
+    /\bxox[baprs]-[0-9A-Za-z-]{10,72}\b/i,
+    /\b(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}\b/g,
+    /\bghp_[0-9a-zA-Z]{36}\b/g,
+    /\beyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\b/,
     /\b[a-zA-Z0-9-]{40,}\b/,
     /\b[a-zA-Z0-9_-]{64,}\b/,
   ];
