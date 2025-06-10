@@ -47,7 +47,31 @@
   ];
 
   const genericHighEntropy = /[A-Za-z0-9_-]{32,}/;
-
+  function isEditableElement(element) {
+    if (!element || element.nodeType !== Node.ELEMENT_NODE) return false;
+    
+    const tag = element.tagName.toLowerCase();
+    
+    // Check for input/textarea elements
+    if (tag === "input" || tag === "textarea") return true;
+    
+    // Check for contenteditable
+    if (element.hasAttribute("contenteditable")) {
+      const contenteditable = element.getAttribute("contenteditable").toLowerCase();
+      return contenteditable === "true" || contenteditable === "";
+    }
+  
+    let parent = element.parentElement;
+    while (parent) {
+      if (parent.hasAttribute("contenteditable")) {
+        const contenteditable = parent.getAttribute("contenteditable").toLowerCase();
+        if (contenteditable === "true" || contenteditable === "") return true;
+      }
+      parent = parent.parentElement;
+    }
+    
+    return false;
+  }
   function computeShannonEntropy(str) {
     const len = str.length;
     const freq = {};
@@ -118,7 +142,8 @@
     const parentElem = textNode.parentElement;
     if (!parentElem) return;
     if (textNode.nodeType !== Node.TEXT_NODE) return;
-
+    
+    if (isEditableElement(parentElem)) return;
     const txt = textNode.textContent || "";
     if (!txt.trim()) return;
 
@@ -233,7 +258,7 @@
       if (node.hasAttribute(MARK_ATTR)) return;
 
       const tag = node.tagName.toLowerCase();
-      if (tag === "input" || tag === "textarea") {
+      if (tag === "input") {
         try {
           const val = node.value || "";
           if (quickTest(val) && settings.blurEnabled) {
@@ -245,6 +270,11 @@
         } catch (e) {
           // Ignore errors
         }
+        return;
+      }
+
+      if (isEditableElement(node)) {
+        node.setAttribute(MARK_ATTR, "true");
         return;
       }
       if (tag === "script" || tag === "style") return;
@@ -297,6 +327,8 @@
           const txtNode = mutation.target;
           const parentElem = txtNode.parentElement;
           if (parentElem && parentElem.hasAttribute(MARK_ATTR)) return;
+
+          if (isEditableElement(parentElem)) return;
           const txt = txtNode.textContent || "";
           if (quickTest(txt)) {
             detectAndReplaceTextNode(txtNode);
