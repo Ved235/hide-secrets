@@ -3,7 +3,6 @@
 A browser extension that automatically detects and masks high-entropy secrets and personally identifiable information in webpages— Tokens, API keys, emails, phone numbers, credit cards and any other high-entropy strings—by blurring or replacing them with `[REDACTED]`.
 
 ---
-_While using this on sites where you are typing data do not select masking style to blur, instead use [REDACTED] style. If your webpage ever gets stuck close it and then open it again_
 ## Features
 
 * **Automatic Page Scan**
