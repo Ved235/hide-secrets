@@ -58,14 +58,14 @@ All filters and style preferences are stored in `chrome.storage.sync`. Changing 
 
 ## Running Locally
 
-1. **Clone** the repository:
+1. Download the latest release:
 
    ```bash
-   git clone https://github.com/Ved235/hide-secrets.git
+   https://github.com/Ved235/hide-secrets/releases
    ```
 
 2. **Load as an unpacked extension** in Chrome/Edge/Brave:
-
+   * Unzip the folder 
    * Visit `chrome://extensions/` (or `edge://extensions/`).
    * Enable **Developer mode**.
    * Click **Load unpacked**, then select this project’s directory.
