@@ -47,7 +47,7 @@ All filters and style preferences are stored in `chrome.storage.sync`. Changing 
 | ------------------------- | :-----: | ---------------------------------------------------------------------- |
 | Extension Enabled         |    ✓    | Master on/off switch                                                   |
 | Hide Emails               |    ✓    | Mask email addresses                                                   |
-| Hide Phone Numbers        | disabled | Mask international and local phone numbers                            |
+| Hide Phone Numbers        |    ✓    | Mask international and local phone numbers                            |
 | Hide Credit Cards         |    ✓    | Mask common credit-card number patterns                                |
 | Hide API Keys & Tokens    |    ✓    | Mask JWTs, API keys, and other high-entropy alphanumeric strings       |
 | Hide High-Entropy Strings |    ✓    | Mask any 32+ character base-62 strings with Shannon entropy > 4        |
