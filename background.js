@@ -2,12 +2,14 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.set({
     extensionEnabled: true,
     emailsEnabled: true,
-    phonesEnabled: false,
+    phonesEnabled: true,
     creditcardsEnabled: true,
     apiKeysEnabled: true,
     entropyEnabled: true,
     blurEnabled: true,
-    textRedactionStyle: "blur"
+    textRedactionStyle: "blur",
+    blacklistDomains: [],
+    whitelistDomains: []
   });
 });
 

@@ -7,18 +7,24 @@
   let settings = {
     extensionEnabled: true,
     emailsEnabled: true,
-    phonesEnabled: false,
+    phonesEnabled: true,
     creditcardsEnabled: true,
     apiKeysEnabled: true,
     entropyEnabled: true,
     blurEnabled: true,
-    textRedactionStyle: "blur", 
+    textRedactionStyle: "blur",
+    blacklistDomains: [],
+    whitelistDomains: [],
   };
 
   // Load saved settings
   chrome.storage.sync.get(settings, (savedSettings) => {
     settings = savedSettings;
-    if (settings.extensionEnabled && document.readyState !== "loading") {
+    if (
+      settings.extensionEnabled &&
+      isDomainAllowed() &&
+      document.readyState !== "loading"
+    ) {
       runInitialScan().catch((err) =>
         console.error("Error during initial scan:", err)
       );
@@ -29,7 +35,7 @@
 
   const phonePatterns = [
     /\b\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/,
- /\b(?!\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4})\+?(?:\d[-.\s]?){6,14}\d\b/,
+    /\b(?!\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4})\+?(?:\d[-.\s]?){6,14}\d\b/,
   ];
 
   const creditCardPatterns = [
@@ -47,29 +53,50 @@
   ];
 
   const genericHighEntropy = /[A-Za-z0-9_-]{32,}/;
+
+  function isDomainAllowed() {
+    const url = window.location.hostname.toLowerCase();
+    if (
+      settings.blacklistDomains.some(
+        (domain) => domain === url || url.endsWith("." + domain)
+      )
+    ) {
+      return false;
+    }
+
+    if (settings.whitelistDomains.length > 0) {
+      return settings.whitelistDomains.some(
+        (domain) => url === domain || url.endsWith("." + domain)
+      );
+    }
+    return true;
+  }
+
   function isEditableElement(element) {
     if (!element || element.nodeType !== Node.ELEMENT_NODE) return false;
-    
+
     const tag = element.tagName.toLowerCase();
-    
-    // Check for input/textarea elements
+
     if (tag === "input" || tag === "textarea") return true;
-    
-    // Check for contenteditable
+
     if (element.hasAttribute("contenteditable")) {
-      const contenteditable = element.getAttribute("contenteditable").toLowerCase();
+      const contenteditable = element
+        .getAttribute("contenteditable")
+        .toLowerCase();
       return contenteditable === "true" || contenteditable === "";
     }
-  
+
     let parent = element.parentElement;
     while (parent) {
       if (parent.hasAttribute("contenteditable")) {
-        const contenteditable = parent.getAttribute("contenteditable").toLowerCase();
+        const contenteditable = parent
+          .getAttribute("contenteditable")
+          .toLowerCase();
         if (contenteditable === "true" || contenteditable === "") return true;
       }
       parent = parent.parentElement;
     }
-    
+
     return false;
   }
   function computeShannonEntropy(str) {
@@ -87,7 +114,13 @@
   }
 
   function quickTest(text) {
-    if (!settings.extensionEnabled || !text || !text.trim()) return false;
+    if (
+      !settings.extensionEnabled ||
+      !isDomainAllowed() ||
+      !text ||
+      !text.trim()
+    )
+      return false;
 
     if (settings.apiKeysEnabled) {
       for (let re of tokenPatterns) {
@@ -121,8 +154,6 @@
       }
     }
 
-
-
     if (settings.entropyEnabled) {
       const parts = text.split(/[\s\.\:\'\"!\?\(\)\[\]\{\}]/);
       for (let fragment of parts) {
@@ -142,7 +173,7 @@
     const parentElem = textNode.parentElement;
     if (!parentElem) return;
     if (textNode.nodeType !== Node.TEXT_NODE) return;
-    
+
     if (isEditableElement(parentElem)) return;
     const txt = textNode.textContent || "";
     if (!txt.trim()) return;
@@ -193,8 +224,6 @@
         }
       }
     }
-
-
 
     if (!matchInfo && settings.entropyEnabled) {
       const parts = txt.split(/[\s\.\:\'\"!\?\(\)\[\]\{\}]/);
@@ -250,9 +279,10 @@
   }
 
   async function walkAndProcess(node) {
-    if (!settings.extensionEnabled){
-      console.log("Extension is disabled, skipping processing."+ node.value);
-      return;}
+    if (!settings.extensionEnabled || !isDomainAllowed()) {
+      console.log("Extension is disabled, skipping processing." + node.value);
+      return;
+    }
 
     if (node.nodeType === Node.ELEMENT_NODE) {
       if (node.hasAttribute(MARK_ATTR)) return;
@@ -262,8 +292,7 @@
         try {
           const val = node.value || "";
           if (quickTest(val) && settings.blurEnabled) {
-            console.log(
-              `Redacting input value: ${val} in element: <${tag}>` );
+            console.log(`Redacting input value: ${val} in element: <${tag}>`);
             node.style.filter = "blur(5px)";
           }
           node.setAttribute(MARK_ATTR, "true");
@@ -291,15 +320,13 @@
   }
 
   async function runInitialScan() {
-    if (!settings.extensionEnabled) return;
+    if (!settings.extensionEnabled || !isDomainAllowed()) return;
     const root = document.body || document.documentElement;
     await walkAndProcess(root);
   }
 
- 
-
   const observer = new MutationObserver((mutations) => {
-    if (!settings.extensionEnabled) return;
+    if (!settings.extensionEnabled || !isDomainAllowed()) return;
 
     for (const mutation of mutations) {
       (async () => {
