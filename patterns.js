@@ -160,11 +160,6 @@ window.SECRET_PATTERNS = [
     confidence: "high"
   },
   {
-    id: "Shopify private app access token",
-    regex: new RegExp("shppa_[a-fA-F0-9]{32}", "g"),
-    confidence: "high"
-  },
-  {
     id: "PyPI upload token",
     regex: new RegExp("pypi-AgEIcHlwaS5vcmc[A-Za-z0-9-_]{50,1000}", "g"),
     confidence: "high"

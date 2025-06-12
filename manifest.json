@@ -4,8 +4,6 @@
     "version": "1.0",
     "description": "Automatically hides secrets in the browser",
     "permissions": [
-        "activeTab",
-        "scripting",
         "storage"
     ],
     "host_permissions": [
@@ -25,5 +23,8 @@
     "action": {
         "default_title": "Hide Secrets",
         "default_popup": "popup.html"
+    },
+    "icons":{
+        "128": "hide_secrets_icon.png"
     }
 }
