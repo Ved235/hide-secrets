@@ -18,7 +18,6 @@ A browser extension that automatically detects and masks high-entropy secrets an
   All processing is client-side; no content is sent to any server.
   ![image](https://github.com/user-attachments/assets/19551d93-c711-4f53-9827-b1decf0aea43)
 
-  
 ## Usage
 Use directly from the (chrome web store)[https://chromewebstore.google.com/detail/ldenkldeajffnnopcglkejofffefohio?utm_source=item-share-cb]
 
@@ -33,7 +32,7 @@ Use directly from the (chrome web store)[https://chromewebstore.google.com/detai
    * **Choose Style**: Blur (`••••`) or Redacted (`[REDACTED]`).
 
    <p align="center">
-     <img src="https://github.com/user-attachments/assets/d7f67de9-7243-4b40-b97c-b4d683105cd5" alt="Popup Settings" width="400">
+     <img src="https://github.com/user-attachments/assets/d68a8466-a91e-4723-a173-cb26a93c4583" alt="Popup Settings" width="400">
   </p>
 
 4. **Refresh** the page to apply any new settings.
