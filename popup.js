@@ -222,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     input.addEventListener("input", updateButton);
-    updateButton(); 
+    updateButton();
   }
 
   updateAddButtonState("blacklist-input", "add-blacklist-btn");

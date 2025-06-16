@@ -17,14 +17,16 @@
             "matches": [
                 "<all_urls>"
             ],
-            "js": ["content.js"]
+            "js": [
+                "content.js"
+            ]
         }
     ],
     "action": {
         "default_title": "Hide Secrets",
         "default_popup": "popup.html"
     },
-    "icons":{
+    "icons": {
         "128": "hide_secrets_icon.png"
     }
 }

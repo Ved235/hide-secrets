@@ -20,6 +20,7 @@ A browser extension that automatically detects and masks high-entropy secrets an
 
   
 ## Usage
+Use directly from the (chrome web store)[https://chromewebstore.google.com/detail/ldenkldeajffnnopcglkejofffefohio?utm_source=item-share-cb]
 
 1. **Install** the extension (see “Running Locally” below).
 
