@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Load settings and domains
+  // Load settings, domains, and custom regex patterns
   chrome.storage.sync.get(
     {
       extensionEnabled: true,
@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
       textRedactionStyle: "blur",
       blacklistDomains: [],
       whitelistDomains: [],
+      customRegexPatterns: [],
     },
     (settings) => {
       // Load toggle settings
@@ -59,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderDomainList("blacklist", settings.blacklistDomains);
       renderDomainList("whitelist", settings.whitelistDomains);
+      renderCustomRegexList(settings.customRegexPatterns);
     }
   );
 
@@ -129,6 +131,39 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function renderCustomRegexList(patterns) {
+    const container = document.getElementById("custom-regex-list");
+    container.innerHTML = "";
+
+    if (patterns.length === 0) {
+      container.innerHTML = `<div class="empty-list">No custom regex patterns</div>`;
+      return;
+    }
+
+    patterns.forEach((pattern, index) => {
+      const item = document.createElement("div");
+      item.className = "domain-item";
+      item.innerHTML = `
+        <div>
+          <div class="domain-name">${escapeHtml(pattern.name || `Pattern ${index + 1}`)}</div>
+          <div style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem;">
+            ${escapeHtml(pattern.regex)}
+          </div>
+        </div>
+        <button class="remove-domain-btn" data-index="${index}">
+          Remove
+        </button>
+      `;
+      container.appendChild(item);
+    });
+
+    container.querySelectorAll(".remove-domain-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        removeCustomRegex(parseInt(btn.dataset.index));
+      });
+    });
+  }
+
   function escapeHtml(text) {
     const div = document.createElement("div");
     div.textContent = text;
@@ -139,6 +174,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const domainRegex =
       /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     return domainRegex.test(domain) && domain.length <= 253;
+  }
+
+  function isValidRegex(regexStr) {
+    try {
+      new RegExp(regexStr);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   function addDomain(type, domain) {
@@ -185,6 +229,62 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function addCustomRegex() {
+    const nameInput = document.getElementById("regex-name-input");
+    const regexInput = document.getElementById("regex-input");
+    
+    const name = nameInput.value.trim();
+    const regexStr = regexInput.value.trim();
+
+    if (!regexStr) {
+      showStatus("Please enter a regex pattern", "error");
+      return;
+    }
+
+    if (!isValidRegex(regexStr)) {
+      showStatus("Please enter a valid regex pattern", "error");
+      return;
+    }
+
+    chrome.storage.sync.get(["customRegexPatterns"], (result) => {
+      const patterns = result.customRegexPatterns || [];
+
+      // Check for duplicate regex patterns
+      if (patterns.some(p => p.regex === regexStr)) {
+        showStatus("This regex pattern already exists", "error");
+        return;
+      }
+
+      const newPattern = {
+        name: name || `Custom Pattern ${patterns.length + 1}`,
+        regex: regexStr,
+        enabled: true
+      };
+
+      patterns.push(newPattern);
+
+      chrome.storage.sync.set({ customRegexPatterns: patterns }, () => {
+        renderCustomRegexList(patterns);
+        nameInput.value = "";
+        regexInput.value = "";
+        showStatus("Custom regex pattern added successfully", "success");
+      });
+    });
+  }
+
+  function removeCustomRegex(index) {
+    chrome.storage.sync.get(["customRegexPatterns"], (result) => {
+      const patterns = result.customRegexPatterns || [];
+      patterns.splice(index, 1);
+
+      chrome.storage.sync.set({ customRegexPatterns: patterns }, () => {
+        renderCustomRegexList(patterns);
+        showStatus("Custom regex pattern removed successfully", "success");
+      });
+    });
+  }
+
+  // Domain management event listeners
   document.getElementById("add-blacklist-btn").addEventListener("click", () => {
     const domain = document.getElementById("blacklist-input").value;
     addDomain("blacklist", domain);
@@ -194,6 +294,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const domain = document.getElementById("whitelist-input").value;
     addDomain("whitelist", domain);
   });
+
+  // Custom regex event listeners
+  document.getElementById("add-regex-btn").addEventListener("click", addCustomRegex);
 
   document
     .getElementById("blacklist-input")
@@ -213,6 +316,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+  document
+    .getElementById("regex-input")
+    .addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        addCustomRegex();
+      }
+    });
+
   function updateAddButtonState(inputId, buttonId) {
     const input = document.getElementById(inputId);
     const button = document.getElementById(buttonId);
@@ -227,4 +338,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateAddButtonState("blacklist-input", "add-blacklist-btn");
   updateAddButtonState("whitelist-input", "add-whitelist-btn");
+  updateAddButtonState("regex-input", "add-regex-btn");
 });

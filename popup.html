@@ -423,6 +423,7 @@
       <div class="tab-navigation">
         <button class="tab-button active" data-tab="settings">Settings</button>
         <button class="tab-button" data-tab="domains">Domains</button>
+        <button class="tab-button" data-tab="custom-regex">Custom Regex</button>
       </div>
 
       <!-- Settings Tab -->
@@ -667,6 +668,39 @@
           </div>
           <div id="whitelist-domains" class="domain-list">
             <div class="empty-list">No whitelisted domains</div>
+          </div>
+        </div>
+      </div>
+
+      <!--Custom Regex Tab-->
+      <div id="custom-regex-tab" class="tab-content">
+        <div class="domain-section">
+          <h3>Custom Regex Patterns</h3>
+          <p>
+            Add custom regex patterns to match and redact sensitive information:
+          </p>
+          <div class="domain-input-group">
+            <input
+              type="text"
+              id="regex-name-input"
+              class="domain-input"
+              placeholder="Pattern name"
+              style="flex: 0 0 120px; min-width: 100px"
+            />
+            <input
+              type="text"
+              id="regex-input"
+              class="domain-input"
+              placeholder="Enter regex pattern"
+              style="flex: 1; min-width: 0;"
+            />
+            <button id="add-regex-btn" class="add-domain-btn">Add</button>
+          </div>
+          <div class="regex-help" style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 1rem;">
+            Examples: <code>\b\d{3}-\d{2}-\d{4}\b</code> (SSN), <code>[A-Z]{2}\d{6}[A-Z]\d</code> (License), <code>sk_live_[0-9a-zA-Z]{24}</code> (API Key)
+          </div>
+          <div id="custom-regex-list" class="domain-list">
+            <div class="empty-list">No custom regex patterns</div>
           </div>
         </div>
       </div>

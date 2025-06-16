@@ -9,7 +9,8 @@ chrome.runtime.onInstalled.addListener(() => {
     blurEnabled: true,
     textRedactionStyle: "blur",
     blacklistDomains: [],
-    whitelistDomains: []
+    whitelistDomains: [],
+    customRegexPatterns: []
   });
 });
 
