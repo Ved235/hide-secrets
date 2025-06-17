@@ -15,6 +15,7 @@
     textRedactionStyle: "blur",
     blacklistDomains: [],
     whitelistDomains: [],
+    customRegexPatterns: [],
   };
 
   // Load saved settings
@@ -53,6 +54,24 @@
   ];
 
   const genericHighEntropy = /[A-Za-z0-9_-]{32,}/;
+
+  function getCustomRegexPatterns() {
+    if (!settings.customRegexPatterns || !Array.isArray(settings.customRegexPatterns)) {
+      return [];
+    }
+    
+    return settings.customRegexPatterns
+      .filter(pattern => pattern.enabled !== false)
+      .map(pattern => {
+        try {
+          return new RegExp(pattern.regex, 'g');
+        } catch (e) {
+          console.warn(`Invalid custom regex pattern: ${pattern.regex}`, e);
+          return null;
+        }
+      })
+      .filter(regex => regex !== null);
+  }
 
   function isDomainAllowed() {
     const url = window.location.hostname.toLowerCase();
@@ -99,6 +118,7 @@
 
     return false;
   }
+  
   function computeShannonEntropy(str) {
     const len = str.length;
     const freq = {};
@@ -121,6 +141,15 @@
       !text.trim()
     )
       return false;
+
+    // Test custom regex patterns first
+    const customPatterns = getCustomRegexPatterns();
+    for (let re of customPatterns) {
+      re.lastIndex = 0; // Reset regex state
+      if (re.test(text)) {
+        return true;
+      }
+    }
 
     if (settings.apiKeysEnabled) {
       for (let re of tokenPatterns) {
@@ -181,7 +210,19 @@
     let matchInfo = null;
     let matchedPattern = null;
     let match = null;
-    if (settings.apiKeysEnabled) {
+
+    // Check custom regex patterns first
+    const customPatterns = getCustomRegexPatterns();
+    for (let re of customPatterns) {
+      re.lastIndex = 0;
+      if ((match = re.exec(txt))) {
+        matchInfo = { value: match[0] };
+        matchedPattern = re;
+        break;
+      }
+    }
+
+    if (!matchInfo && settings.apiKeysEnabled) {
       for (let re of tokenPatterns) {
         re.lastIndex = 0;
         if ((match = re.exec(txt))) {
