@@ -19,7 +19,7 @@ A browser extension that automatically detects and masks high-entropy secrets an
   ![image](https://github.com/user-attachments/assets/19551d93-c711-4f53-9827-b1decf0aea43)
 
 ## Usage
-Use directly from the (chrome web store)[https://chromewebstore.google.com/detail/ldenkldeajffnnopcglkejofffefohio?utm_source=item-share-cb]
+Use directly from the ![chrome web store](https://chromewebstore.google.com/detail/ldenkldeajffnnopcglkejofffefohio?utm_source=item-share-cb)
 
 1. **Install** the extension (see “Running Locally” below).
 
