@@ -18,7 +18,6 @@
     customRegexPatterns: [],
   };
 
-  // Load saved settings
   chrome.storage.sync.get(settings, (savedSettings) => {
     settings = savedSettings;
     if (
@@ -32,11 +31,11 @@
     }
   });
 
-  const emailPatterns = [/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/];
+  const emailPatterns = [/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g];
 
   const phonePatterns = [
-    /\b\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/,
-    /\b(?!\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4})\+?(?:\d[-.\s]?){6,14}\d\b/,
+    /\b\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g,
+    /\b(?!\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4})\+?(?:\d[-.\s]?){6,14}\d\b/g,
   ];
 
   const creditCardPatterns = [
@@ -44,13 +43,14 @@
   ];
 
   const tokenPatterns = [
-    /\bxox[baprs]-[0-9A-Za-z-]{10,72}\b/i,
+    /\b(apikey|secret|key|api|password|pass|pw|host)=[0-9a-zA-Z-_.{}]{4,120}\b/gi,
+    /\bxox[baprs]-[0-9A-Za-z-]{10,72}\b/gi,
     /\b(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}\b/g,
     /\bghp_[0-9a-zA-Z]{36}\b/g,
     /\bgho_[0-9a-zA-Z]{36}\b/g,
     /\bAIza[0-9A-Za-z\\\\-_]{35}\b/g,
-    /\beyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\b/,
-    /\b[a-zA-Z0-9_-]{64,}\b/,
+    /\beyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\b/g,
+    /\b[a-zA-Z0-9_-]{64,}\b/g,
   ];
 
   const genericHighEntropy = /[A-Za-z0-9_-]{32,}/;
@@ -142,10 +142,10 @@
     )
       return false;
 
-    // Test custom regex patterns first
+    
     const customPatterns = getCustomRegexPatterns();
     for (let re of customPatterns) {
-      re.lastIndex = 0; // Reset regex state
+      re.lastIndex = 0;
       if (re.test(text)) {
         return true;
       }
@@ -211,7 +211,6 @@
     let matchedPattern = null;
     let match = null;
 
-    // Check custom regex patterns first
     const customPatterns = getCustomRegexPatterns();
     for (let re of customPatterns) {
       re.lastIndex = 0;
@@ -286,10 +285,7 @@
 
     if (!matchInfo) return;
 
-    const flags = matchedPattern.flags.includes("g")
-      ? matchedPattern.flags
-      : matchedPattern.flags + "g";
-    const globalRe = new RegExp(matchedPattern.source, flags);
+    const globalRe = new RegExp(matchedPattern.source, matchedPattern.flags);
 
     const frag = document.createDocumentFragment();
     let lastIndex = 0;
@@ -338,7 +334,7 @@
           }
           node.setAttribute(MARK_ATTR, "true");
         } catch (e) {
-          // Ignore errors
+          console.log("Error processing input element")
         }
         return;
       }
