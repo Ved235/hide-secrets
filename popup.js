@@ -145,7 +145,9 @@ document.addEventListener("DOMContentLoaded", () => {
       item.className = "domain-item";
       item.innerHTML = `
         <div>
-          <div class="domain-name">${escapeHtml(pattern.name || `Pattern ${index + 1}`)}</div>
+          <div class="domain-name">${escapeHtml(
+            pattern.name || `Pattern ${index + 1}`
+          )}</div>
           <div style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem;">
             ${escapeHtml(pattern.regex)}
           </div>
@@ -232,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function addCustomRegex() {
     const nameInput = document.getElementById("regex-name-input");
     const regexInput = document.getElementById("regex-input");
-    
+
     const name = nameInput.value.trim();
     const regexStr = regexInput.value.trim();
 
@@ -250,7 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const patterns = result.customRegexPatterns || [];
 
       // Check for duplicate regex patterns
-      if (patterns.some(p => p.regex === regexStr)) {
+      if (patterns.some((p) => p.regex === regexStr)) {
         showStatus("This regex pattern already exists", "error");
         return;
       }
@@ -258,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const newPattern = {
         name: name || `Custom Pattern ${patterns.length + 1}`,
         regex: regexStr,
-        enabled: true
+        enabled: true,
       };
 
       patterns.push(newPattern);
@@ -296,7 +298,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Custom regex event listeners
-  document.getElementById("add-regex-btn").addEventListener("click", addCustomRegex);
+  document
+    .getElementById("add-regex-btn")
+    .addEventListener("click", addCustomRegex);
 
   document
     .getElementById("blacklist-input")
@@ -316,13 +320,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-  document
-    .getElementById("regex-input")
-    .addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        addCustomRegex();
-      }
-    });
+  document.getElementById("regex-input").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      addCustomRegex();
+    }
+  });
 
   function updateAddButtonState(inputId, buttonId) {
     const input = document.getElementById(inputId);

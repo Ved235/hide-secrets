@@ -10,10 +10,10 @@ chrome.runtime.onInstalled.addListener(() => {
     textRedactionStyle: "blur",
     blacklistDomains: [],
     whitelistDomains: [],
-    customRegexPatterns: []
+    customRegexPatterns: [],
   });
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  return true; 
+  return true;
 });

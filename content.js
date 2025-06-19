@@ -56,21 +56,24 @@
   const genericHighEntropy = /[A-Za-z0-9_-]{32,}/;
 
   function getCustomRegexPatterns() {
-    if (!settings.customRegexPatterns || !Array.isArray(settings.customRegexPatterns)) {
+    if (
+      !settings.customRegexPatterns ||
+      !Array.isArray(settings.customRegexPatterns)
+    ) {
       return [];
     }
-    
+
     return settings.customRegexPatterns
-      .filter(pattern => pattern.enabled !== false)
-      .map(pattern => {
+      .filter((pattern) => pattern.enabled !== false)
+      .map((pattern) => {
         try {
-          return new RegExp(pattern.regex, 'g');
+          return new RegExp(pattern.regex, "g");
         } catch (e) {
           console.warn(`Invalid custom regex pattern: ${pattern.regex}`, e);
           return null;
         }
       })
-      .filter(regex => regex !== null);
+      .filter((regex) => regex !== null);
   }
 
   function isDomainAllowed() {
@@ -118,7 +121,7 @@
 
     return false;
   }
-  
+
   function computeShannonEntropy(str) {
     const len = str.length;
     const freq = {};
@@ -142,7 +145,6 @@
     )
       return false;
 
-    
     const customPatterns = getCustomRegexPatterns();
     for (let re of customPatterns) {
       re.lastIndex = 0;
@@ -334,7 +336,7 @@
           }
           node.setAttribute(MARK_ATTR, "true");
         } catch (e) {
-          console.log("Error processing input element")
+          console.log("Error processing input element");
         }
         return;
       }

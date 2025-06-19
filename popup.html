@@ -692,12 +692,17 @@
               id="regex-input"
               class="domain-input"
               placeholder="Enter regex pattern"
-              style="flex: 1; min-width: 0;"
+              style="flex: 1; min-width: 0"
             />
             <button id="add-regex-btn" class="add-domain-btn">Add</button>
           </div>
-          <div class="regex-help" style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 1rem;">
-            Examples: <code>\b\d{3}-\d{2}-\d{4}\b</code> (SSN), <code>[A-Z]{2}\d{6}[A-Z]\d</code> (License), <code>sk_live_[0-9a-zA-Z]{24}</code> (API Key)
+          <div
+            class="regex-help"
+            style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 1rem"
+          >
+            Examples: <code>\b\d{3}-\d{2}-\d{4}\b</code> (SSN),
+            <code>[A-Z]{2}\d{6}[A-Z]\d</code> (License),
+            <code>sk_live_[0-9a-zA-Z]{24}</code> (API Key)
           </div>
           <div id="custom-regex-list" class="domain-list">
             <div class="empty-list">No custom regex patterns</div>
