@@ -195,6 +195,15 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    let extractedDomain;
+    try {
+      const url = new URL(domain);
+      extractedDomain = url.hostname;
+    } catch (e) {
+      extractedDomain = domain;
+    }
+    
+    domain = extractedDomain.toLowerCase();
     if (!isValidDomain(domain)) {
       showStatus("Please enter a valid domain", "error");
       return;
