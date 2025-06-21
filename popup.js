@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
       apiKeysEnabled: true,
       entropyEnabled: true,
       blurEnabled: true,
+      customRegexEnabled: false,
       textRedactionStyle: "blur",
       blacklistDomains: [],
       whitelistDomains: [],
@@ -52,6 +53,8 @@ document.addEventListener("DOMContentLoaded", () => {
         settings.apiKeysEnabled;
       document.getElementById("entropy-enabled").checked =
         settings.entropyEnabled;
+      document.getElementById("custom-regex-enabled").checked =
+        settings.customRegexEnabled;
       document.getElementById("blur-enabled").checked = settings.blurEnabled;
       document.getElementById("blur-style").checked =
         settings.textRedactionStyle === "blur";
@@ -71,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "creditcards-enabled",
     "api-keys-enabled",
     "entropy-enabled",
+    "custom-regex-enabled",
     "blur-enabled",
   ];
   inputs.forEach((id) =>
@@ -89,6 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
         .checked,
       apiKeysEnabled: document.getElementById("api-keys-enabled").checked,
       entropyEnabled: document.getElementById("entropy-enabled").checked,
+      customRegexEnabled: document.getElementById("custom-regex-enabled")
+        .checked,
       blurEnabled: document.getElementById("blur-enabled").checked,
       textRedactionStyle: document.getElementById("blur-style").checked
         ? "blur"
@@ -202,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (e) {
       extractedDomain = domain;
     }
-    
+
     domain = extractedDomain.toLowerCase();
     if (!isValidDomain(domain)) {
       showStatus("Please enter a valid domain", "error");

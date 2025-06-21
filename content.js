@@ -12,6 +12,7 @@
     apiKeysEnabled: true,
     entropyEnabled: true,
     blurEnabled: true,
+    customRegexEnabled: false,
     textRedactionStyle: "blur",
     blacklistDomains: [],
     whitelistDomains: [],
@@ -145,11 +146,13 @@
     )
       return false;
 
-    const customPatterns = getCustomRegexPatterns();
-    for (let re of customPatterns) {
-      re.lastIndex = 0;
-      if (re.test(text)) {
-        return true;
+    if (settings.customRegexEnabled) {
+      const customPatterns = getCustomRegexPatterns();
+      for (let re of customPatterns) {
+        re.lastIndex = 0;
+        if (re.test(text)) {
+          return true;
+        }
       }
     }
 
@@ -213,16 +216,17 @@
     let matchedPattern = null;
     let match = null;
 
-    const customPatterns = getCustomRegexPatterns();
-    for (let re of customPatterns) {
-      re.lastIndex = 0;
-      if ((match = re.exec(txt))) {
-        matchInfo = { value: match[0] };
-        matchedPattern = re;
-        break;
+    if (settings.customRegexEnabled) {
+      const customPatterns = getCustomRegexPatterns();
+      for (let re of customPatterns) {
+        re.lastIndex = 0;
+        if ((match = re.exec(txt))) {
+          matchInfo = { value: match[0] };
+          matchedPattern = re;
+          break;
+        }
       }
     }
-
     if (!matchInfo && settings.apiKeysEnabled) {
       for (let re of tokenPatterns) {
         re.lastIndex = 0;

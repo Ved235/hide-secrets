@@ -7,6 +7,7 @@ chrome.runtime.onInstalled.addListener(() => {
     apiKeysEnabled: true,
     entropyEnabled: true,
     blurEnabled: true,
+    customRegexEnabled: false,
     textRedactionStyle: "blur",
     blacklistDomains: [],
     whitelistDomains: [],
