@@ -2,7 +2,7 @@
   "use strict";
 
   const MARK_ATTR = "data-secret-processed";
-
+  let redactionCount = 0;
   // Default settings
   let settings = {
     extensionEnabled: true,
@@ -201,6 +201,19 @@
     return false;
   }
 
+  function updateBadge() {
+    if (redactionCount > 0) {
+      chrome.runtime.sendMessage({
+        action: "updateBadge",
+        count: redactionCount,
+      });
+    } else {
+      chrome.runtime.sendMessage({
+        action: "clearBadge",
+      });
+    }
+  }
+
   function detectAndReplaceTextNode(textNode) {
     if (!settings.extensionEnabled) return;
 
@@ -296,6 +309,8 @@
     const frag = document.createDocumentFragment();
     let lastIndex = 0;
     let m;
+    let matchCount = 0;
+
     while ((m = globalRe.exec(txt))) {
       const idx = m.index;
       if (idx > lastIndex) {
@@ -313,12 +328,18 @@
       }
       frag.appendChild(span);
       lastIndex = idx + m[0].length;
+      matchCount++;
     }
+
     if (lastIndex < txt.length) {
       frag.appendChild(document.createTextNode(txt.slice(lastIndex)));
     }
 
-    parentElem.replaceChild(frag, textNode);
+    if (matchCount > 0) {
+      redactionCount += matchCount;
+      parentElem.replaceChild(frag, textNode);
+      updateBadge();
+    }
   }
 
   async function walkAndProcess(node) {
@@ -337,6 +358,8 @@
           if (quickTest(val) && settings.blurEnabled) {
             console.log(`Redacting input value: ${val} in element: <${tag}>`);
             node.style.filter = "blur(5px)";
+            redactionCount++;
+            updateBadge();
           }
           node.setAttribute(MARK_ATTR, "true");
         } catch (e) {
@@ -364,6 +387,7 @@
 
   async function runInitialScan() {
     if (!settings.extensionEnabled || !isDomainAllowed()) return;
+    redactionCount = 0;
     const root = document.body || document.documentElement;
     await walkAndProcess(root);
   }
