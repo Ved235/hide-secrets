@@ -3,6 +3,16 @@
 
   const MARK_ATTR = "data-secret-processed";
   let redactionCount = 0;
+  let sessionStats = {
+    email: 0,
+    phone: 0,
+    creditCard: 0,
+    apiKey: 0,
+    entropy: 0,
+    custom: 0,
+    total: 0
+  };
+
   // Default settings
   let settings = {
     extensionEnabled: true,
@@ -51,10 +61,58 @@
     /\bgho_[0-9a-zA-Z]{36}\b/g,
     /\bAIza[0-9A-Za-z\\\\-_]{35}\b/g,
     /\beyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\b/g,
+    /\b[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\b/g,
     /\b[a-zA-Z0-9_-]{64,}\b/g,
   ];
 
   const genericHighEntropy = /[A-Za-z0-9_-]{32,}/;
+
+  function updateStats(type, count = 1) {
+    sessionStats[type] += count;
+    sessionStats.total += count;
+    redactionCount += count;
+
+    // Save to persistent storage for history
+    const domain = window.location.hostname.toLowerCase();
+    const today = new Date().toISOString().split('T')[0];
+    
+    chrome.storage.local.get(['detectionHistory'], (result) => {
+      const history = result.detectionHistory || {};
+      
+      if (!history[domain]) {
+        history[domain] = {};
+      }
+      
+      if (!history[domain][today]) {
+        history[domain][today] = {
+          email: 0,
+          phone: 0,
+          creditCard: 0,
+          apiKey: 0,
+          entropy: 0,
+          custom: 0,
+          total: 0
+        };
+      }
+      
+      history[domain][today][type] += count;
+      history[domain][today].total += count;
+      
+      chrome.storage.local.set({ detectionHistory: history });
+    });
+
+    updateBadge();
+  }
+
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'getStats') {
+      sendResponse({
+        sessionStats: sessionStats,
+        domain: window.location.hostname.toLowerCase()
+      });
+    }
+    return true;
+  });
 
   function getCustomRegexPatterns() {
     if (
@@ -228,6 +286,7 @@
     let matchInfo = null;
     let matchedPattern = null;
     let match = null;
+    let detectionType = null;
 
     if (settings.customRegexEnabled) {
       const customPatterns = getCustomRegexPatterns();
@@ -236,6 +295,7 @@
         if ((match = re.exec(txt))) {
           matchInfo = { value: match[0] };
           matchedPattern = re;
+          detectionType = 'custom';
           break;
         }
       }
@@ -246,6 +306,7 @@
         if ((match = re.exec(txt))) {
           matchInfo = { value: match[0] };
           matchedPattern = re;
+          detectionType = 'apiKey';
           break;
         }
       }
@@ -257,6 +318,7 @@
         if ((match = re.exec(txt))) {
           matchInfo = { value: match[0] };
           matchedPattern = re;
+          detectionType = 'email';
           break;
         }
       }
@@ -268,6 +330,7 @@
         if ((match = re.exec(txt))) {
           matchInfo = { value: match[0] };
           matchedPattern = re;
+          detectionType = 'phone';
           break;
         }
       }
@@ -279,6 +342,7 @@
         if ((match = re.exec(txt))) {
           matchInfo = { value: match[0] };
           matchedPattern = re;
+          detectionType = 'creditCard';
           break;
         }
       }
@@ -297,6 +361,7 @@
             fragment.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&"),
             "g"
           );
+          detectionType = 'entropy';
           break;
         }
       }
@@ -336,9 +401,8 @@
     }
 
     if (matchCount > 0) {
-      redactionCount += matchCount;
+      updateStats(detectionType, matchCount);
       parentElem.replaceChild(frag, textNode);
-      updateBadge();
     }
   }
 
@@ -358,8 +422,13 @@
           if (quickTest(val) && settings.blurEnabled) {
             console.log(`Redacting input value: ${val} in element: <${tag}>`);
             node.style.filter = "blur(5px)";
-            redactionCount++;
-            updateBadge();
+            // Determine type for input field redaction
+            let inputType = 'apiKey'; // default assumption for input fields
+            if (emailPatterns.some(re => re.test(val))) inputType = 'email';
+            else if (phonePatterns.some(re => re.test(val))) inputType = 'phone';
+            else if (creditCardPatterns.some(re => re.test(val))) inputType = 'creditCard';
+            
+            updateStats(inputType, 1);
           }
           node.setAttribute(MARK_ATTR, "true");
         } catch (e) {
@@ -387,6 +456,16 @@
 
   async function runInitialScan() {
     if (!settings.extensionEnabled || !isDomainAllowed()) return;
+    // Reset session stats for new scan
+    sessionStats = {
+      email: 0,
+      phone: 0,
+      creditCard: 0,
+      apiKey: 0,
+      entropy: 0,
+      custom: 0,
+      total: 0
+    };
     redactionCount = 0;
     const root = document.body || document.documentElement;
     await walkAndProcess(root);

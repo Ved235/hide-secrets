@@ -20,10 +20,117 @@ document.addEventListener("DOMContentLoaded", () => {
 
       tabContents.forEach((content) => content.classList.remove("active"));
       document.getElementById(`${tabName}-tab`).classList.add("active");
+
+      if (tabName === 'stats') {
+        loadCurrentStats();
+        loadDetectionHistory();
+      }
     });
   });
 
-  // Load settings, domains, and custom regex patterns
+  // Load current session stats
+  function loadCurrentStats() {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'getStats' }, (response) => {
+          if (response) {
+            updateStatsDisplay(response.sessionStats);
+            document.getElementById('domain-name').textContent = response.domain || 'Unknown Domain';
+          } else {
+            updateStatsDisplay({
+              email: 0,
+              phone: 0,
+              creditCard: 0,
+              apiKey: 0,
+              entropy: 0,
+              custom: 0,
+              total: 0
+            });
+            document.getElementById('domain-name').textContent = 'No Data Available';
+          }
+        });
+      }
+    });
+  }
+
+  function updateStatsDisplay(stats) {
+    document.getElementById('stat-email').textContent = stats.email || 0;
+    document.getElementById('stat-phone').textContent = stats.phone || 0;
+    document.getElementById('stat-creditCard').textContent = stats.creditCard || 0;
+    document.getElementById('stat-apiKey').textContent = stats.apiKey || 0;
+    document.getElementById('stat-entropy').textContent = stats.entropy || 0;
+    document.getElementById('stat-custom').textContent = stats.custom || 0;
+    document.getElementById('stat-total').textContent = stats.total || 0;
+  }
+
+  function loadDetectionHistory() {
+    chrome.storage.local.get(['detectionHistory'], (result) => {
+      const history = result.detectionHistory || {};
+      const historyList = document.getElementById('history-list');
+      
+      const last7Days = [];
+      const today = new Date();
+      
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        last7Days.push(dateStr);
+      }
+
+      const historyItems = [];
+      
+      Object.keys(history).forEach(domain => {
+        last7Days.forEach(dateStr => {
+          if (history[domain][dateStr] && history[domain][dateStr].total > 0) {
+            historyItems.push({
+              domain: domain,
+              date: dateStr,
+              count: history[domain][dateStr].total,
+              details: history[domain][dateStr]
+            });
+          }
+        });
+      });
+
+      historyItems.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      if (historyItems.length === 0) {
+        historyList.innerHTML = '<div class="empty-history">No detection history found</div>';
+        return;
+      }
+
+      // Render history items
+      historyList.innerHTML = historyItems.map(item => {
+        const date = new Date(item.date);
+        const isToday = item.date === new Date().toISOString().split('T')[0];
+        const displayDate = isToday ? 'Today' : date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric'
+        });
+        
+        return `
+          <div class="history-item">
+            <div>
+              <div class="history-domain">${escapeHtml(item.domain)}</div>
+              <div class="history-date">${displayDate}</div>
+            </div>
+            <div class="history-count">${item.count}</div>
+          </div>
+        `;
+      }).join('');
+    });
+  }
+
+  document.getElementById('clear-history-btn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to clear all detection history?')) {
+      chrome.storage.local.set({ detectionHistory: {} }, () => {
+        loadDetectionHistory();
+        showStatus('Detection history cleared', 'success');
+      });
+    }
+  });
+
   chrome.storage.sync.get(
     {
       extensionEnabled: true,
@@ -66,6 +173,12 @@ document.addEventListener("DOMContentLoaded", () => {
       renderCustomRegexList(settings.customRegexPatterns);
     }
   );
+
+  // Load initial stats if stats tab is already active
+  if (document.querySelector('.tab-button[data-tab="stats"]').classList.contains('active')) {
+    loadCurrentStats();
+    loadDetectionHistory();
+  }
 
   const inputs = [
     "extension-enabled",
@@ -312,7 +425,6 @@ document.addEventListener("DOMContentLoaded", () => {
     addDomain("whitelist", domain);
   });
 
-  // Custom regex event listeners
   document
     .getElementById("add-regex-btn")
     .addEventListener("click", addCustomRegex);
